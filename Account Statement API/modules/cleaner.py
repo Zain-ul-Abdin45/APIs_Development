@@ -1,19 +1,14 @@
-from typing import List, Dict
+import time
+from module.mongo import MongoClient
 
 class Cleaner:
-    @staticmethod
-    def clean_transactions(transactions: List[Dict]) -> List[Dict]:
+    def __init__(self, mongo_client: MongoClient):
+        self.mongo_client = mongo_client
+
+    def clean_cached_data(self, collection_name: str):
         """
-        Cleans and formats the transaction data.
-        Example: Removing sensitive information or adjusting date formats.
+        Cleans cached data from the response collection every 10 minutes.
         """
-        cleaned_transactions = []
-        for transaction in transactions:
-            cleaned_transaction = {
-                "transaction_id": transaction.get("transaction_id"),
-                "amount": transaction.get("amount"),
-                "date": transaction.get("date"),
-                "description": transaction.get("description", "No description available")
-            }
-            cleaned_transactions.append(cleaned_transaction)
-        return cleaned_transactions
+        current_time = int(time.time())
+        ten_minutes_ago = current_time - 600  # 600 seconds = 10 minutes
+        self.mongo_client.db[collection_name].delete_many({"timestamp": {"$lt": ten_minutes_ago}})
