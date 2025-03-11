@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
-from typing import List, Dict
+from pydantic import ValidationError
 from module.mongo import MongoClient
 from module.worker import Worker
+from module.models import TransactionQueryModel
 import json
 
 app = FastAPI()
@@ -10,21 +11,18 @@ app = FastAPI()
 mongo_client = MongoClient('configs/mongodb.json')
 worker = Worker(mongo_client)
 
-@app.get("/transactions", response_model=List[Dict])
-async def get_transactions():
+@app.post("/transactions", response_model=Dict)
+async def get_transactions(query: TransactionQueryModel):
     """
-    Endpoint to fetch the transaction history.
-    Returns the latest 3500 transactions if available, or fewer if there are less than 3500.
+    Endpoint to fetch the transaction history, ensuring proper validation of start_date and end_date.
     """
     try:
         # Fetch and process transactions
-        transactions = worker.fetch_and_process_transactions("transactions", limit=3500)
-        
-        # If no transactions are found, return an empty list
-        if not transactions:
-            return []
-        
-        return transactions
+        response_data = worker.fetch_and_process_transactions(query)
+        return response_data
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=e.errors())
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        raise HTTPException(status_code=500, detail="An error occurred while processing the request.")
