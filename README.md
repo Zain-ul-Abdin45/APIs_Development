@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # async-fastapi-demo
 
 Production-grade reference for **async FastAPI** wired to MongoDB (Motor), PostgreSQL (SQLAlchemy async + asyncpg), and an external HTTP API (httpx) — all running concurrently inside a single event loop thread.
@@ -180,4 +180,4 @@ pytest tests/ -v
 MIT
 =======
 # APIs_Development
->>>>>>> c1b2ad775bbb53dd4a0ec459de595a997dfe0e3b
+c1b2ad775bbb53dd4a0ec459de595a997dfe0e3b
